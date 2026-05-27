@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
 
@@ -102,6 +103,48 @@ export default function EquipmentDashboard() {
                   <p className="text-gray-500 text-xs mt-0.5">{s.label}</p>
                 </div>
               ))}
+            </div>
+
+            {/* Payments & Withdrawal */}
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-card p-6">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="font-black text-ink text-lg">Payments & Wallet</h2>
+                <Link href="/wallet" className="text-sm text-brand-600 font-semibold">Full Wallet →</Link>
+              </div>
+              {/* Balance */}
+              <div className="bg-gradient-to-br from-brand-600 to-brand-700 rounded-2xl p-5 text-white mb-4">
+                <p className="text-white/70 text-sm">Available Balance</p>
+                <p className="text-3xl font-black mt-1">₦87,500</p>
+                <p className="text-white/50 text-xs mt-1">Updated just now</p>
+              </div>
+              {/* Quick withdraw */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <Link href="/wallet" className="flex flex-col items-center gap-1.5 bg-green-50 rounded-2xl p-4 hover:bg-green-100 transition-colors">
+                  <span className="text-2xl">💸</span>
+                  <span className="text-xs font-bold text-green-800">Withdraw</span>
+                </Link>
+                <Link href="/wallet#history" className="flex flex-col items-center gap-1.5 bg-blue-50 rounded-2xl p-4 hover:bg-blue-100 transition-colors">
+                  <span className="text-2xl">📋</span>
+                  <span className="text-xs font-bold text-blue-800">History</span>
+                </Link>
+              </div>
+              {/* Recent transactions */}
+              <div className="space-y-2">
+                <p className="text-xs font-bold text-gray-400 uppercase mb-2">Recent</p>
+                {[
+                  { label: 'Equipment hire fee — Tractor', amount: '+₦45,000', date: 'Today', color: 'text-green-600' },
+                  { label: 'Withdrawal to GTBank', amount: '-₦30,000', date: 'Yesterday', color: 'text-red-500' },
+                  { label: 'Equipment hire fee — Pump', amount: '+₦28,000', date: '2 days ago', color: 'text-green-600' },
+                ].map((t, i) => (
+                  <div key={i} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                    <div>
+                      <p className="text-sm font-semibold text-ink">{t.label}</p>
+                      <p className="text-xs text-gray-400">{t.date}</p>
+                    </div>
+                    <span className={`font-black text-sm ${t.color}`}>{t.amount}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 p-6">

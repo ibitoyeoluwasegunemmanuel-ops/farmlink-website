@@ -1,8 +1,11 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import { useCart } from '../../contexts/CartContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 const API = process.env.NEXT_PUBLIC_API_URL ||
   'https://farm-link-bmiv-cpk3unx1j-ibitoyeoluwasegunemmanuel-ops-projects.vercel.app/api';
@@ -99,7 +102,7 @@ function timeAgo(dateStr?: string): string {
   return new Date(dateStr).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' });
 }
 
-function ProductCard({ item }: { item: Harvest }) {
+function ProductCard({ item, onBuy, inCart, justAdded }: { item: Harvest; onBuy: (item: Harvest) => void; inCart: boolean; justAdded: boolean }) {
   const initials = (item.farmer?.fullName || 'F').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
   const rating = item.farmer?.rating || 4.5;
   const fullStars = Math.floor(rating);
@@ -173,9 +176,22 @@ function ProductCard({ item }: { item: Harvest }) {
           </div>
 
           {/* CTA */}
-          <button className="w-full py-3 rounded-xl bg-brand-700 hover:bg-brand-600 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2">
-            <span>🔒</span> Buy with Escrow
-          </button>
+          {justAdded ? (
+            <div className="w-full py-3 rounded-xl bg-green-600 text-white text-sm font-bold flex items-center justify-center gap-2">
+              <span>✓</span> Added!
+            </div>
+          ) : inCart ? (
+            <Link href="/cart" className="w-full py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2">
+              <span>✓</span> In Cart — Go to Cart
+            </Link>
+          ) : (
+            <button
+              onClick={() => onBuy(item)}
+              className="w-full py-3 rounded-xl bg-brand-700 hover:bg-brand-600 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2"
+            >
+              <span>🔒</span> Buy with Escrow
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -197,13 +213,52 @@ function SkeletonCard() {
   );
 }
 
+const MOCK_DRIVERS = [
+  { id: 'd1', name: 'Alhaji Musa Trucks', vehicle: '10-tonne Lorry', route: 'Kano → Lagos', pricePerKm: 150 },
+  { id: 'd2', name: 'Swift Agro Haulage', vehicle: '5-tonne Pick-up', route: 'Abuja → Port Harcourt', pricePerKm: 120 },
+  { id: 'd3', name: 'Delta Express Cargo', vehicle: 'Refrigerated Van', route: 'Delta → Onitsha', pricePerKm: 200 },
+];
+
+const MOCK_EQUIPMENT_HIRE = [
+  { id: 'e1', name: 'John Deere 5055E', type: 'Tractor', dailyRate: 45000 },
+  { id: 'e2', name: 'Honda WP20X', type: 'Irrigation Pump', dailyRate: 8500 },
+  { id: 'e3', name: 'New Holland TC5', type: 'Harvester', dailyRate: 90000 },
+];
+
+const MOCK_INVESTMENTS = [
+  { id: 'i1', crop: 'Maize Farm — Kano', returnPct: 18, risk: 'Low' },
+  { id: 'i2', crop: 'Poultry Processing — Ogun', returnPct: 24, risk: 'Medium' },
+  { id: 'i3', crop: 'Tomato Greenhouse — Anambra', returnPct: 22, risk: 'Low' },
+];
+
 export default function MarketplacePage() {
+  const router = useRouter();
+  const { addItem, hasItem } = useCart();
+  const { isAuthenticated } = useAuth();
   const [items, setItems] = useState<Harvest[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [selectedState, setSelectedState] = useState('All States');
   const [sort, setSort] = useState('newest');
+  const [added, setAdded] = useState<string | null>(null);
+
+  const handleBuy = (item: Harvest) => {
+    if (!isAuthenticated) { router.push('/auth?role=buyer'); return; }
+    addItem({
+      id: item.id,
+      cropType: item.cropType,
+      pricePerUnit: item.pricePerUnit,
+      unit: item.unit,
+      availableQty: item.quantity,
+      farmerId: item.farmer?.id || '',
+      farmerName: item.farmer?.fullName || 'Farmer',
+      quality: item.quality,
+      location: item.location?.state,
+    });
+    setAdded(item.id);
+    setTimeout(() => setAdded(null), 2000);
+  };
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -381,7 +436,15 @@ export default function MarketplacePage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {filtered.map(item => <ProductCard key={item.id} item={item} />)}
+            {filtered.map(item => (
+              <ProductCard
+                key={item.id}
+                item={item}
+                onBuy={handleBuy}
+                inCart={hasItem(item.id)}
+                justAdded={added === item.id}
+              />
+            ))}
           </div>
         )}
 
@@ -395,8 +458,79 @@ export default function MarketplacePage() {
         )}
       </div>
 
+      {/* ── More on FarmLink Discovery Section ── */}
+      <section className="bg-gray-50 border-t border-gray-100 py-14 mt-4">
+        <div className="container-tight">
+          <h2 className="text-2xl font-black text-ink mb-8">More on FarmLink</h2>
+
+          {/* Transport */}
+          <div className="mb-10">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-ink flex items-center gap-2"><span>🚛</span> Transport Available</h3>
+              <Link href="/transport" className="text-sm text-brand-600 font-semibold hover:text-brand-700 transition-colors">See all →</Link>
+            </div>
+            <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1">
+              {MOCK_DRIVERS.map(d => (
+                <div key={d.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex-shrink-0 w-64 hover:shadow-card-hover hover:-translate-y-0.5 transition-all">
+                  <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-xl mb-3">🚛</div>
+                  <p className="font-bold text-ink text-sm mb-0.5">{d.name}</p>
+                  <p className="text-xs text-gray-400 mb-1">{d.vehicle}</p>
+                  <p className="text-xs text-gray-500 mb-3">📍 {d.route}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-brand-700">₦{d.pricePerKm}/km</span>
+                    <Link href="/transport" className="text-xs bg-brand-600 hover:bg-brand-500 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors">Book</Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Equipment */}
+          <div className="mb-10">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-ink flex items-center gap-2"><span>⚙️</span> Equipment for Hire</h3>
+              <Link href="/equipment" className="text-sm text-brand-600 font-semibold hover:text-brand-700 transition-colors">See all →</Link>
+            </div>
+            <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1">
+              {MOCK_EQUIPMENT_HIRE.map(e => (
+                <div key={e.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex-shrink-0 w-64 hover:shadow-card-hover hover:-translate-y-0.5 transition-all">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-xl mb-3">⚙️</div>
+                  <p className="font-bold text-ink text-sm mb-0.5">{e.name}</p>
+                  <p className="text-xs text-gray-400 mb-3">{e.type}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-brand-700">₦{e.dailyRate.toLocaleString()}/day</span>
+                    <Link href="/equipment" className="text-xs bg-amber-500 hover:bg-amber-400 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors">Hire</Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Investments */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-ink flex items-center gap-2"><span>💼</span> Investment Opportunities</h3>
+              <Link href="/invest" className="text-sm text-brand-600 font-semibold hover:text-brand-700 transition-colors">See all →</Link>
+            </div>
+            <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1">
+              {MOCK_INVESTMENTS.map(inv => (
+                <div key={inv.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex-shrink-0 w-64 hover:shadow-card-hover hover:-translate-y-0.5 transition-all">
+                  <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-xl mb-3">💼</div>
+                  <p className="font-bold text-ink text-sm mb-1">{inv.crop}</p>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs font-bold text-green-700">{inv.returnPct}% return</span>
+                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${inv.risk === 'Low' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{inv.risk} Risk</span>
+                  </div>
+                  <Link href="/invest" className="block text-center text-xs bg-green-600 hover:bg-green-500 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors">Invest</Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Farmer CTA Banner ── */}
-      <section className="bg-brand-950 py-16 mt-8 relative overflow-hidden">
+      <section className="bg-brand-950 py-16 relative overflow-hidden">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse 60% 80% at 80% 50%, rgba(31,168,69,0.15) 0%, transparent 70%)' }}
