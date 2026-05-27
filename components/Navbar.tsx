@@ -39,8 +39,8 @@ export default function Navbar() {
         { href: '/equipment', label: 'Equipment' },
         { href: '/invest', label: 'Invest' },
         { href: '/land', label: 'Land' },
+        { href: '/blog', label: 'Blog' },
         { href: '/orders', label: 'My Orders' },
-        { href: '/dashboard', label: 'Dashboard' },
       ]
     : [
         { href: '/marketplace', label: 'Marketplace' },
@@ -48,6 +48,7 @@ export default function Navbar() {
         { href: '/equipment', label: 'Equipment' },
         { href: '/invest', label: 'Invest' },
         { href: '/land', label: 'Land' },
+        { href: '/blog', label: 'Blog' },
         { href: '/join', label: 'Join' },
       ];
 
@@ -174,7 +175,9 @@ export default function Navbar() {
                     {[
                       { href: '/dashboard', label: 'Dashboard', icon: '📊' },
                       { href: '/orders', label: 'My Orders', icon: '📦' },
+                      { href: '/messages', label: 'Messages', icon: '💬' },
                       { href: '/wallet', label: 'Wallet', icon: '💳' },
+                      { href: '/referral', label: 'Referral & Earn', icon: '🎁' },
                       { href: '/profile', label: 'My Profile', icon: '👤' },
                       { href: '/cart', label: 'Cart', icon: '🛒', badge: count > 0 ? String(count) : undefined },
                     ].map(item => (

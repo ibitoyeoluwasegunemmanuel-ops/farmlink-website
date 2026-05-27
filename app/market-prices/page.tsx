@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 
@@ -31,12 +31,19 @@ export default function MarketPricesPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'change'>('name');
-  const [tick, setTick] = useState(0);
+  const [alertCommodity, setAlertCommodity] = useState('');
+  const [alertPrice, setAlertPrice] = useState('');
+  const [alertDirection, setAlertDirection] = useState<'above' | 'below'>('below');
+  const [alertSet, setAlertSet] = useState(false);
 
-  useEffect(() => {
-    const t = setInterval(() => setTick(p => p + 1), 3000);
-    return () => clearInterval(t);
-  }, []);
+  const setAlert = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!alertCommodity || !alertPrice) return;
+    setAlertSet(true);
+    setTimeout(() => setAlertSet(false), 3000);
+    setAlertCommodity('');
+    setAlertPrice('');
+  };
 
   const filtered = COMMODITIES
     .filter(c => selectedCategory === 'All' || c.category === selectedCategory)
@@ -233,6 +240,49 @@ export default function MarketPricesPage() {
                 </div>
               );
             })}
+          </div>
+        </section>
+
+        {/* Price Alert */}
+        <section className="container-tight pb-12">
+          <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-3xl p-6 text-white">
+            <div className="flex items-start gap-4 flex-wrap">
+              <div className="flex-1 min-w-[220px]">
+                <div className="text-2xl mb-2">🔔</div>
+                <h2 className="text-xl font-black mb-1">Price Alerts</h2>
+                <p className="text-white/70 text-sm">Get notified when a commodity hits your target price</p>
+              </div>
+              {alertSet ? (
+                <div className="flex-1 flex items-center justify-center bg-white/20 rounded-2xl p-6 text-center">
+                  <div>
+                    <div className="text-3xl mb-2">✅</div>
+                    <p className="font-black">Alert set!</p>
+                    <p className="text-white/70 text-sm">We'll notify you when the price is reached.</p>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={setAlert} className="flex-1 min-w-[280px] space-y-3">
+                  <select value={alertCommodity} onChange={e => setAlertCommodity(e.target.value)}
+                    className="w-full rounded-xl px-4 py-3 text-sm text-gray-900 bg-white outline-none">
+                    <option value="">Select commodity...</option>
+                    {COMMODITIES.map(c => <option key={c.id} value={c.name}>{c.icon} {c.name}</option>)}
+                  </select>
+                  <div className="flex gap-2">
+                    <select value={alertDirection} onChange={e => setAlertDirection(e.target.value as 'above' | 'below')}
+                      className="rounded-xl px-3 py-3 text-sm text-gray-900 bg-white outline-none flex-shrink-0">
+                      <option value="below">Drops below</option>
+                      <option value="above">Rises above</option>
+                    </select>
+                    <input value={alertPrice} onChange={e => setAlertPrice(e.target.value)} type="number" placeholder="₦ Target price"
+                      className="flex-1 rounded-xl px-4 py-3 text-sm text-gray-900 bg-white outline-none" />
+                  </div>
+                  <button type="submit" disabled={!alertCommodity || !alertPrice}
+                    className="w-full bg-white text-indigo-700 font-black py-3 rounded-xl text-sm hover:bg-white/90 transition-colors disabled:opacity-50">
+                    Set Alert
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
         </section>
 

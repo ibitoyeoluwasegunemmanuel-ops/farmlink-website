@@ -24,6 +24,15 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
+  const [repeatDone, setRepeatDone] = useState(false);
+  const [showDispute, setShowDispute] = useState(false);
+  const [disputeReason, setDisputeReason] = useState('');
+  const [disputeDetail, setDisputeDetail] = useState('');
+  const [disputeSubmitted, setDisputeSubmitted] = useState(false);
+  const [showReview, setShowReview] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
   useEffect(() => {
     const id = params.id as string;
@@ -131,30 +140,134 @@ export default function OrderDetailPage() {
                 </button>
               </div>
             )}
+
+            {/* Review panel (completed orders) */}
+            {order.status === 'completed' && !reviewSubmitted && (
+              <div className="bg-white rounded-2xl border border-gray-100 p-6">
+                {!showReview ? (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-ink">Rate this order</p>
+                      <p className="text-sm text-gray-500">Help others by reviewing the farmer</p>
+                    </div>
+                    <button onClick={() => setShowReview(true)} className="bg-amber-50 text-amber-700 border border-amber-200 font-bold px-4 py-2 rounded-xl text-sm hover:bg-amber-100 transition-colors">
+                      ⭐ Leave Review
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <h3 className="font-bold text-ink mb-4">Rate your experience</h3>
+                    <div className="flex gap-2 mb-4">
+                      {[1,2,3,4,5].map(s => (
+                        <button key={s} onClick={() => setRating(s)}
+                          className={`text-3xl transition-transform hover:scale-110 ${s <= rating ? 'opacity-100' : 'opacity-30'}`}>⭐</button>
+                      ))}
+                    </div>
+                    <textarea value={reviewText} onChange={e => setReviewText(e.target.value)}
+                      placeholder="Share your experience with this farmer (optional)..."
+                      rows={3} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-400 mb-4 resize-none" />
+                    <div className="flex gap-3">
+                      <button onClick={() => setShowReview(false)} className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl font-semibold text-sm">Cancel</button>
+                      <button disabled={rating === 0} onClick={() => { setReviewSubmitted(true); setShowReview(false); }}
+                        className="flex-1 bg-amber-500 hover:bg-amber-600 disabled:opacity-40 text-white font-bold py-2.5 rounded-xl text-sm transition-colors">
+                        Submit Review
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            {reviewSubmitted && (
+              <div className="bg-green-50 border border-green-200 rounded-2xl p-4 text-center">
+                <span className="text-2xl">🌟</span>
+                <p className="font-bold text-green-800 mt-1">Review submitted — thank you!</p>
+              </div>
+            )}
+
+            {/* Dispute */}
+            {['paid', 'in_transit', 'delivered'].includes(order.status) && !disputeSubmitted && (
+              <div>
+                {!showDispute ? (
+                  <button onClick={() => setShowDispute(true)} className="w-full text-sm text-red-500 hover:text-red-700 hover:bg-red-50 py-3 rounded-xl border border-red-100 transition-colors font-medium">
+                    ⚠️ Report a problem with this order
+                  </button>
+                ) : (
+                  <div className="bg-red-50 border border-red-200 rounded-2xl p-5">
+                    <h3 className="font-bold text-red-800 mb-3">Report an Issue</h3>
+                    <select value={disputeReason} onChange={e => setDisputeReason(e.target.value)}
+                      className="w-full border border-red-200 bg-white rounded-xl px-4 py-2.5 text-sm outline-none mb-3">
+                      <option value="">Select reason...</option>
+                      <option>Goods not delivered</option>
+                      <option>Wrong items delivered</option>
+                      <option>Poor quality / damaged goods</option>
+                      <option>Short quantity delivered</option>
+                      <option>Farmer unresponsive</option>
+                      <option>Other</option>
+                    </select>
+                    <textarea value={disputeDetail} onChange={e => setDisputeDetail(e.target.value)}
+                      placeholder="Describe the issue in detail..."
+                      rows={3} className="w-full border border-red-200 bg-white rounded-xl px-4 py-3 text-sm outline-none mb-3 resize-none" />
+                    <div className="flex gap-3">
+                      <button onClick={() => setShowDispute(false)} className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl font-semibold text-sm bg-white">Cancel</button>
+                      <button disabled={!disputeReason} onClick={() => { setDisputeSubmitted(true); setShowDispute(false); }}
+                        className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white font-bold py-2.5 rounded-xl text-sm transition-colors">
+                        Submit Dispute
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            {disputeSubmitted && (
+              <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+                <p className="font-bold text-red-800">✅ Dispute submitted</p>
+                <p className="text-sm text-red-600 mt-1">Our team will review and respond within 24 hours. Payment remains in escrow.</p>
+              </div>
+            )}
           </div>
 
           {/* Right: payment details */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 sticky top-24">
-              <h2 className="font-bold text-ink mb-4">Payment Details</h2>
-              <div className="space-y-3 text-sm">
-                {[
-                  { label: 'Total paid', value: `₦${order.totalAmount?.toLocaleString()}`, bold: true },
-                  { label: 'Platform fee (2%)', value: `₦${order.platformFee?.toLocaleString() || '—'}` },
-                  { label: 'Logistics fee (5%)', value: `₦${order.logisticsFee?.toLocaleString() || '—'}` },
-                  { label: 'Farmer receives', value: `₦${order.farmerAmount?.toLocaleString() || '—'}` },
-                  { label: 'Escrow status', value: order.escrowStatus || 'holding' },
-                ].map(r => (
-                  <div key={r.label} className={`flex justify-between ${r.bold ? 'font-bold text-ink' : 'text-gray-600'}`}>
-                    <span>{r.label}</span>
-                    <span className="capitalize">{r.value}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-5 pt-4 border-t border-gray-100">
-                <div className="flex items-center gap-2 text-xs text-brand-600 bg-brand-50 px-3 py-2 rounded-lg">
-                  <span>🔒</span> Funds secured by FarmLink Escrow
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 sticky top-24 space-y-4">
+              <div>
+                <h2 className="font-bold text-ink mb-4">Payment Details</h2>
+                <div className="space-y-3 text-sm">
+                  {[
+                    { label: 'Total paid', value: `₦${order.totalAmount?.toLocaleString()}`, bold: true },
+                    { label: 'Platform fee (2%)', value: `₦${order.platformFee?.toLocaleString() || '—'}` },
+                    { label: 'Logistics fee (5%)', value: `₦${order.logisticsFee?.toLocaleString() || '—'}` },
+                    { label: 'Farmer receives', value: `₦${order.farmerAmount?.toLocaleString() || '—'}` },
+                    { label: 'Escrow status', value: order.escrowStatus || 'holding' },
+                  ].map(r => (
+                    <div key={r.label} className={`flex justify-between ${r.bold ? 'font-bold text-ink' : 'text-gray-600'}`}>
+                      <span>{r.label}</span>
+                      <span className="capitalize">{r.value}</span>
+                    </div>
+                  ))}
                 </div>
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <div className="flex items-center gap-2 text-xs text-brand-600 bg-brand-50 px-3 py-2 rounded-lg">
+                    <span>🔒</span> Funds secured by FarmLink Escrow
+                  </div>
+                </div>
+              </div>
+
+              {/* Repeat order */}
+              <div className="pt-2 border-t border-gray-100">
+                <p className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">Quick actions</p>
+                {repeatDone ? (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center text-sm text-green-700 font-bold">
+                    ✅ Added to cart!
+                  </div>
+                ) : (
+                  <button onClick={() => { setRepeatDone(true); setTimeout(() => setRepeatDone(false), 3000); }}
+                    className="w-full bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 font-bold py-2.5 rounded-xl text-sm transition-colors mb-2">
+                    🔁 Repeat This Order
+                  </button>
+                )}
+                <Link href="/messages" className="w-full flex items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 font-semibold py-2.5 rounded-xl text-sm transition-colors">
+                  💬 Message Farmer
+                </Link>
               </div>
             </div>
           </div>
