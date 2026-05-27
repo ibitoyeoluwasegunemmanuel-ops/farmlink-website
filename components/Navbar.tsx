@@ -4,15 +4,19 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import { useLang, LANG_OPTIONS } from '../contexts/LanguageContext';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
   const { count } = useCart();
+  const { lang, setLang } = useLang();
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
+  const langRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -22,9 +26,8 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setUserMenuOpen(false);
-      }
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setUserMenuOpen(false);
+      if (langRef.current && !langRef.current.contains(e.target as Node)) setLangOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -103,6 +106,33 @@ export default function Navbar() {
 
         {/* Desktop right */}
         <div className="hidden md:flex items-center gap-3">
+          {/* Language switcher */}
+          <div className="relative" ref={langRef}>
+            <button
+              onClick={() => setLangOpen(v => !v)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                isDark ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-gray-600 hover:text-brand-600 hover:bg-brand-50'
+              }`}
+            >
+              <span>{LANG_OPTIONS.find(l => l.code === lang)?.flag}</span>
+              <span className="uppercase text-xs font-bold">{lang}</span>
+            </button>
+            {langOpen && (
+              <div className="absolute right-0 top-full mt-2 w-44 bg-white rounded-2xl border border-gray-100 shadow-elevated overflow-hidden z-50">
+                {LANG_OPTIONS.map(opt => (
+                  <button
+                    key={opt.code}
+                    onClick={() => { setLang(opt.code); setLangOpen(false); }}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-brand-50 ${lang === opt.code ? 'bg-brand-50 text-brand-700 font-bold' : 'text-gray-700'}`}
+                  >
+                    <span>{opt.flag}</span>
+                    <span>{opt.native}</span>
+                    {lang === opt.code && <span className="ml-auto text-brand-600 text-xs">✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {/* Notifications bell */}
           {isAuthenticated && (
             <Link
@@ -283,6 +313,17 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+
+            {/* Language picker — mobile */}
+            <div className="flex items-center gap-2 px-3 py-2 mt-1 border-t border-gray-100 pt-3">
+              <span className="text-xs text-gray-400 font-medium mr-1">Language:</span>
+              {LANG_OPTIONS.map(opt => (
+                <button key={opt.code} onClick={() => setLang(opt.code)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${lang === opt.code ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                  {opt.flag} {opt.code.toUpperCase()}
+                </button>
+              ))}
+            </div>
 
             {isAuthenticated ? (
               <button

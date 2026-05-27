@@ -62,6 +62,9 @@ export default function ProductDetailPage() {
   const [qty, setQty] = useState(1);
   const [loading, setLoading] = useState(true);
   const [added, setAdded] = useState(false);
+  const [bulkMode, setBulkMode] = useState(false);
+  const [bulkQty, setBulkQty] = useState('');
+  const [bulkSent, setBulkSent] = useState(false);
 
   useEffect(() => {
     const id = params.id as string;
@@ -257,6 +260,44 @@ export default function ProductDetailPage() {
                   <div className="flex items-center gap-2"><span>🔒</span> Escrow-protected payment</div>
                   <div className="flex items-center gap-2"><span>🚚</span> Delivery available to your state</div>
                   <div className="flex items-center gap-2"><span>↩️</span> Dispute resolution within 48hrs</div>
+                </div>
+
+                {/* Bulk / wholesale order */}
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  {!bulkMode ? (
+                    <button onClick={() => setBulkMode(true)}
+                      className="w-full text-sm text-brand-600 font-semibold hover:bg-brand-50 py-2.5 rounded-xl border border-brand-200 transition-colors">
+                      📦 Request Bulk / Wholesale Order
+                    </button>
+                  ) : bulkSent ? (
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center text-sm text-green-700 font-bold">
+                      ✅ Request sent! The farmer will contact you shortly.
+                    </div>
+                  ) : (
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+                      <p className="text-xs font-bold text-amber-800">Bulk Order Request</p>
+                      <p className="text-xs text-amber-700">For large orders (10+ units), contact the farmer directly for negotiated pricing and delivery terms.</p>
+                      <input
+                        value={bulkQty}
+                        onChange={e => setBulkQty(e.target.value)}
+                        type="number"
+                        placeholder={`Quantity needed (${product.unit}s)`}
+                        className="w-full border border-amber-300 bg-white rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-amber-400"
+                      />
+                      <div className="flex gap-2">
+                        <button onClick={() => setBulkMode(false)} className="flex-1 text-xs text-gray-500 border border-gray-200 py-2 rounded-lg bg-white hover:bg-gray-50 transition-colors">
+                          Cancel
+                        </button>
+                        <button
+                          disabled={!bulkQty || Number(bulkQty) < 1}
+                          onClick={() => { setBulkSent(true); }}
+                          className="flex-1 text-xs bg-amber-500 hover:bg-amber-600 disabled:opacity-40 text-white font-bold py-2 rounded-lg transition-colors"
+                        >
+                          Send Request
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

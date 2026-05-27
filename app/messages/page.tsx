@@ -54,14 +54,27 @@ const CONVOS: Conversation[] = [
   },
 ];
 
+const STORAGE_KEY = 'fl_messages';
+
 export default function MessagesPage() {
-  const { user, isAuthenticated } = useAuth();
-  const [convos, setConvos] = useState(CONVOS);
+  const { isAuthenticated } = useAuth();
+  const [convos, setConvos] = useState<Conversation[]>(() => {
+    if (typeof window === 'undefined') return CONVOS;
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : CONVOS;
+    } catch { return CONVOS; }
+  });
   const [active, setActive] = useState<Conversation | null>(null);
   const [input, setInput] = useState('');
   const [showNew, setShowNew] = useState(false);
   const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Persist conversations to localStorage whenever they change
+  useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(convos)); } catch { /* ignore */ }
+  }, [convos]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

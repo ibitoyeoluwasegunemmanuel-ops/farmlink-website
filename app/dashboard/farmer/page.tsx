@@ -109,9 +109,9 @@ export default function FarmerDashboard() {
             <h1 className="text-base font-black text-ink capitalize">{tab === 'post' ? 'Post New Listing' : tab}</h1>
             <p className="text-gray-400 text-xs">Farmer Dashboard · {user.farmName || user.fullName}</p>
           </div>
-          <button onClick={() => setTab('post')} className="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5">
+          <Link href="/dashboard/farmer/listings/new" className="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5">
             <span>+</span> New Listing
-          </button>
+          </Link>
         </header>
 
         <div className="p-6">

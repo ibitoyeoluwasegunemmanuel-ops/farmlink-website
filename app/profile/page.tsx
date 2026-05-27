@@ -59,6 +59,21 @@ export default function ProfilePage() {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    // Persist updated profile fields to localStorage
+    try {
+      const stored = localStorage.getItem('fl_user');
+      const current = stored ? JSON.parse(stored) : {};
+      const updated = {
+        ...current,
+        fullName: form.fullName || current.fullName,
+        email: form.email || current.email,
+        state: form.state,
+        bio: form.bio,
+        farmName: form.farmName,
+        ...(avatar ? { avatar } : {}),
+      };
+      localStorage.setItem('fl_user', JSON.stringify(updated));
+    } catch { /* ignore */ }
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
