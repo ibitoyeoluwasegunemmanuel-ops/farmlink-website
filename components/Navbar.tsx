@@ -35,11 +35,15 @@ export default function Navbar() {
   const navLinks = isAuthenticated
     ? [
         { href: '/marketplace', label: 'Marketplace' },
+        { href: '/transport', label: 'Transport' },
+        { href: '/equipment', label: 'Equipment' },
         { href: '/orders', label: 'My Orders' },
         { href: '/dashboard', label: 'Dashboard' },
       ]
     : [
         { href: '/marketplace', label: 'Marketplace' },
+        { href: '/transport', label: 'Transport' },
+        { href: '/equipment', label: 'Equipment' },
         { href: '/join', label: 'Join' },
       ];
 
