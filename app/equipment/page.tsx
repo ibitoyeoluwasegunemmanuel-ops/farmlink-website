@@ -1,21 +1,22 @@
 'use client';
 import { useState } from 'react';
-import Link from 'next/link';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import ShareModal from '../../components/ShareModal';
+import MakeOfferModal from '../../components/MakeOfferModal';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
 const EQUIPMENT_LIST = [
-  { id: 'eq1', emoji: '🚜', name: 'John Deere 5055E Tractor', owner: 'Kaduna Agri-Services', ownerInitials: 'KA', ownerBg: 'bg-green-700', state: 'Kaduna', town: 'Zaria', dailyRate: 45000, weeklyRate: 280000, deposit: 50000, available: true, bookings: 34, condition: 'Excellent', type: 'Tractor', hp: '55 HP', capacity: '3 hectares/day', features: ['GPS Navigation', 'Air-conditioned cab', 'Hydraulic lift', 'PTO shaft'], rating: 4.9, reviews: 28, yearMade: 2021 },
-  { id: 'eq2', emoji: '💧', name: 'Honda WP20X Irrigation Pump', owner: 'IrrigaTech Nigeria', ownerInitials: 'IT', ownerBg: 'bg-blue-600', state: 'Kano', town: 'Nassarawa', dailyRate: 8500, weeklyRate: 50000, deposit: 10000, available: true, bookings: 67, condition: 'Good', type: 'Irrigation', hp: '5.5 HP', capacity: '30,000 L/hour', features: ['Self-priming', '2-inch outlet', 'Fuel efficient', 'Portable'], rating: 4.7, reviews: 51, yearMade: 2020 },
-  { id: 'eq3', emoji: '⚙️', name: 'Maize Thresher (5T/hr)', owner: 'Northern Farm Tools', ownerInitials: 'NF', ownerBg: 'bg-amber-700', state: 'Kaduna', town: 'Kafanchan', dailyRate: 25000, weeklyRate: 150000, deposit: 30000, available: false, bookings: 18, condition: 'Good', type: 'Thresher', hp: '15 HP', capacity: '5,000 kg/hour', features: ['Diesel powered', 'Adjustable screen', 'Grain collector', 'Easy cleaning'], rating: 4.6, reviews: 14, yearMade: 2019 },
-  { id: 'eq4', emoji: '🌾', name: 'Rice Combine Harvester', owner: 'Kebbi Agro-Mech', ownerInitials: 'KM', ownerBg: 'bg-brand-700', state: 'Kebbi', town: 'Birnin Kebbi', dailyRate: 80000, weeklyRate: 480000, deposit: 100000, available: true, bookings: 9, condition: 'Excellent', type: 'Harvester', hp: '85 HP', capacity: '2 hectares/hour', features: ['Air-conditioned cab', 'GPS guidance', 'Grain tank 3,000L', 'Auto header height'], rating: 4.9, reviews: 7, yearMade: 2022 },
-  { id: 'eq5', emoji: '🔧', name: 'Power Sprayer (20L Knapsack)', owner: 'AgroTools Ibadan', ownerInitials: 'AI', ownerBg: 'bg-teal-600', state: 'Oyo', town: 'Ibadan', dailyRate: 4500, weeklyRate: 28000, deposit: 5000, available: true, bookings: 142, condition: 'Good', type: 'Sprayer', hp: '1.5 HP', capacity: '1 hectare/hour', features: ['Battery powered', 'Adjustable nozzle', 'Anti-drip valve', 'Lightweight'], rating: 4.5, reviews: 98, yearMade: 2021 },
-  { id: 'eq6', emoji: '⚡', name: '15 KVA Generator (Farm)', owner: 'PowerFarm Ltd', ownerInitials: 'PF', ownerBg: 'bg-yellow-600', state: 'Lagos', town: 'Ikorodu', dailyRate: 15000, weeklyRate: 90000, deposit: 20000, available: true, bookings: 55, condition: 'Good', type: 'Generator', hp: 'N/A', capacity: '15 KVA / 12 KW', features: ['Diesel powered', 'Electric start', 'AVR voltage', 'Low noise'], rating: 4.6, reviews: 43, yearMade: 2020 },
-  { id: 'eq7', emoji: '🌱', name: 'Transplanting Machine', owner: 'Delta AgroMech', ownerInitials: 'DA', ownerBg: 'bg-emerald-700', state: 'Delta', town: 'Asaba', dailyRate: 35000, weeklyRate: 200000, deposit: 40000, available: true, bookings: 6, condition: 'Excellent', type: 'Transplanter', hp: '8 HP', capacity: '0.5 hectare/hour', features: ['Walk-behind type', 'Row spacing adjustment', 'Floating technology', 'Certified'], rating: 4.8, reviews: 5, yearMade: 2022 },
-  { id: 'eq8', emoji: '🏗️', name: 'Borehole Drilling Rig', owner: 'WaterWell NG', ownerInitials: 'WW', ownerBg: 'bg-cyan-700', state: 'Abuja', town: 'Gwagwalada', dailyRate: 120000, weeklyRate: 700000, deposit: 150000, available: false, bookings: 11, condition: 'Excellent', type: 'Drilling', hp: '120 HP', capacity: '100m depth', features: ['Rotary drill', 'Mud pump', 'Casing pipe', 'Certified operator'], rating: 4.7, reviews: 10, yearMade: 2020 },
-  { id: 'eq9', emoji: '🌿', name: 'Cassava Peeling Machine', owner: 'Enugu Agri-Tools', ownerInitials: 'EA', ownerBg: 'bg-lime-700', state: 'Enugu', town: 'Enugu', dailyRate: 12000, weeklyRate: 70000, deposit: 15000, available: true, bookings: 29, condition: 'Good', type: 'Processing', hp: '3 HP', capacity: '1,000 kg/hour', features: ['Stainless steel', 'Low power', 'Easy clean', 'Portable'], rating: 4.4, reviews: 22, yearMade: 2019 },
+  { id: 'eq1', emoji: '🚜', name: 'John Deere 5055E Tractor', owner: 'Kaduna Agri-Services', ownerInitials: 'KA', ownerBg: 'bg-green-700', state: 'Kaduna', town: 'Zaria', dailyRate: 45000, weeklyRate: 280000, deposit: 50000, available: true, negotiable: true, bookings: 34, condition: 'Excellent', type: 'Tractor', hp: '55 HP', capacity: '3 hectares/day', features: ['GPS Navigation', 'Air-conditioned cab', 'Hydraulic lift', 'PTO shaft'], rating: 4.9, reviews: 28, yearMade: 2021 },
+  { id: 'eq2', emoji: '💧', name: 'Honda WP20X Irrigation Pump', owner: 'IrrigaTech Nigeria', ownerInitials: 'IT', ownerBg: 'bg-blue-600', state: 'Kano', town: 'Nassarawa', dailyRate: 8500, weeklyRate: 50000, deposit: 10000, available: true, negotiable: false, bookings: 67, condition: 'Good', type: 'Irrigation', hp: '5.5 HP', capacity: '30,000 L/hour', features: ['Self-priming', '2-inch outlet', 'Fuel efficient', 'Portable'], rating: 4.7, reviews: 51, yearMade: 2020 },
+  { id: 'eq3', emoji: '⚙️', name: 'Maize Thresher (5T/hr)', owner: 'Northern Farm Tools', ownerInitials: 'NF', ownerBg: 'bg-amber-700', state: 'Kaduna', town: 'Kafanchan', dailyRate: 25000, weeklyRate: 150000, deposit: 30000, available: false, negotiable: true, bookings: 18, condition: 'Good', type: 'Thresher', hp: '15 HP', capacity: '5,000 kg/hour', features: ['Diesel powered', 'Adjustable screen', 'Grain collector', 'Easy cleaning'], rating: 4.6, reviews: 14, yearMade: 2019 },
+  { id: 'eq4', emoji: '🌾', name: 'Rice Combine Harvester', owner: 'Kebbi Agro-Mech', ownerInitials: 'KM', ownerBg: 'bg-brand-700', state: 'Kebbi', town: 'Birnin Kebbi', dailyRate: 80000, weeklyRate: 480000, deposit: 100000, available: true, negotiable: false, bookings: 9, condition: 'Excellent', type: 'Harvester', hp: '85 HP', capacity: '2 hectares/hour', features: ['Air-conditioned cab', 'GPS guidance', 'Grain tank 3,000L', 'Auto header height'], rating: 4.9, reviews: 7, yearMade: 2022 },
+  { id: 'eq5', emoji: '🔧', name: 'Power Sprayer (20L Knapsack)', owner: 'AgroTools Ibadan', ownerInitials: 'AI', ownerBg: 'bg-teal-600', state: 'Oyo', town: 'Ibadan', dailyRate: 4500, weeklyRate: 28000, deposit: 5000, available: true, negotiable: true, bookings: 142, condition: 'Good', type: 'Sprayer', hp: '1.5 HP', capacity: '1 hectare/hour', features: ['Battery powered', 'Adjustable nozzle', 'Anti-drip valve', 'Lightweight'], rating: 4.5, reviews: 98, yearMade: 2021 },
+  { id: 'eq6', emoji: '⚡', name: '15 KVA Generator (Farm)', owner: 'PowerFarm Ltd', ownerInitials: 'PF', ownerBg: 'bg-yellow-600', state: 'Lagos', town: 'Ikorodu', dailyRate: 15000, weeklyRate: 90000, deposit: 20000, available: true, negotiable: false, bookings: 55, condition: 'Good', type: 'Generator', hp: 'N/A', capacity: '15 KVA / 12 KW', features: ['Diesel powered', 'Electric start', 'AVR voltage', 'Low noise'], rating: 4.6, reviews: 43, yearMade: 2020 },
+  { id: 'eq7', emoji: '🌱', name: 'Transplanting Machine', owner: 'Delta AgroMech', ownerInitials: 'DA', ownerBg: 'bg-emerald-700', state: 'Delta', town: 'Asaba', dailyRate: 35000, weeklyRate: 200000, deposit: 40000, available: true, negotiable: true, bookings: 6, condition: 'Excellent', type: 'Transplanter', hp: '8 HP', capacity: '0.5 hectare/hour', features: ['Walk-behind type', 'Row spacing adjustment', 'Floating technology', 'Certified'], rating: 4.8, reviews: 5, yearMade: 2022 },
+  { id: 'eq8', emoji: '🏗️', name: 'Borehole Drilling Rig', owner: 'WaterWell NG', ownerInitials: 'WW', ownerBg: 'bg-cyan-700', state: 'Abuja', town: 'Gwagwalada', dailyRate: 120000, weeklyRate: 700000, deposit: 150000, available: false, negotiable: true, bookings: 11, condition: 'Excellent', type: 'Drilling', hp: '120 HP', capacity: '100m depth', features: ['Rotary drill', 'Mud pump', 'Casing pipe', 'Certified operator'], rating: 4.7, reviews: 10, yearMade: 2020 },
+  { id: 'eq9', emoji: '🌿', name: 'Cassava Peeling Machine', owner: 'Enugu Agri-Tools', ownerInitials: 'EA', ownerBg: 'bg-lime-700', state: 'Enugu', town: 'Enugu', dailyRate: 12000, weeklyRate: 70000, deposit: 15000, available: true, negotiable: false, bookings: 29, condition: 'Good', type: 'Processing', hp: '3 HP', capacity: '1,000 kg/hour', features: ['Stainless steel', 'Low power', 'Easy clean', 'Portable'], rating: 4.4, reviews: 22, yearMade: 2019 },
 ];
 
 const EQUIPMENT_TYPES = ['All Types', 'Tractor', 'Irrigation', 'Thresher', 'Harvester', 'Sprayer', 'Generator', 'Transplanter', 'Drilling', 'Processing'];
@@ -37,6 +38,8 @@ export default function EquipmentPage() {
   const [date, setDate] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [booked, setBooked] = useState(false);
+  const [shareEq, setShareEq] = useState<typeof EQUIPMENT_LIST[0] | null>(null);
+  const [offerEq, setOfferEq] = useState<typeof EQUIPMENT_LIST[0] | null>(null);
 
   const filtered = EQUIPMENT_LIST.filter(e => {
     if (filter.available && !e.available) return false;
@@ -190,13 +193,28 @@ export default function EquipmentPage() {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => eq.available && setSelected(eq)}
-                      disabled={!eq.available}
-                      className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all ${eq.available ? 'bg-violet-700 hover:bg-violet-600 active:scale-95 text-white' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
-                    >
-                      {eq.available ? 'Hire Now →' : 'Currently Rented'}
-                    </button>
+                    {/* Negotiable badge */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${eq.negotiable ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-500 border-gray-200'}`}>
+                        {eq.negotiable ? '🤝 Negotiable' : '🔒 Fixed Price'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => eq.available && setSelected(eq)}
+                        disabled={!eq.available}
+                        className={`py-2.5 rounded-xl text-sm font-bold transition-all ${eq.available ? 'bg-violet-700 hover:bg-violet-600 active:scale-95 text-white' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
+                      >
+                        {eq.available ? 'Hire →' : 'Rented Out'}
+                      </button>
+                      <button
+                        onClick={() => setShareEq(eq)}
+                        className="py-2.5 rounded-xl text-sm font-bold border border-gray-200 text-gray-600 hover:border-violet-300 hover:text-violet-700 transition-all"
+                      >
+                        🔗 Share
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -266,6 +284,15 @@ export default function EquipmentPage() {
                 </div>
               </div>
 
+              {selected.negotiable && (
+                <button
+                  type="button"
+                  onClick={() => { setOfferEq(selected); setSelected(null); }}
+                  className="w-full border border-violet-300 text-violet-700 font-bold py-2.5 rounded-xl text-sm hover:bg-violet-50 transition-colors"
+                >
+                  🤝 Make an Offer Instead
+                </button>
+              )}
               <button type="submit" disabled={submitting} className="w-full bg-violet-700 hover:bg-violet-600 disabled:opacity-60 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
                 {submitting ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : '⚙️'}
                 {submitting ? 'Submitting...' : 'Confirm Hire Request'}
@@ -273,6 +300,25 @@ export default function EquipmentPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {shareEq && (
+        <ShareModal
+          title={`${shareEq.name} — ${shareEq.owner}`}
+          description={`₦${shareEq.dailyRate.toLocaleString()}/day · ${shareEq.town}, ${shareEq.state}`}
+          onClose={() => setShareEq(null)}
+        />
+      )}
+
+      {offerEq && (
+        <MakeOfferModal
+          listingTitle={`${offerEq.name} — ${offerEq.town}, ${offerEq.state}`}
+          askingPrice={offerEq.dailyRate}
+          unit="day"
+          sellerName={offerEq.owner}
+          sellerType="equipment"
+          onClose={() => setOfferEq(null)}
+        />
       )}
     </div>
   );

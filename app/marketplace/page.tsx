@@ -231,6 +231,26 @@ const MOCK_INVESTMENTS = [
   { id: 'i3', crop: 'Tomato Greenhouse — Anambra', returnPct: 22, risk: 'Low' },
 ];
 
+const COUNTRIES = [
+  { code: 'NG', name: 'Nigeria', flag: '🇳🇬', currency: '₦' },
+  { code: 'GH', name: 'Ghana', flag: '🇬🇭', currency: 'GH₵' },
+  { code: 'KE', name: 'Kenya', flag: '🇰🇪', currency: 'KSh' },
+  { code: 'ZA', name: 'South Africa', flag: '🇿🇦', currency: 'R' },
+  { code: 'ET', name: 'Ethiopia', flag: '🇪🇹', currency: 'Br' },
+  { code: 'SN', name: 'Senegal', flag: '🇸🇳', currency: 'CFA' },
+  { code: 'CI', name: "Côte d'Ivoire", flag: '🇨🇮', currency: 'CFA' },
+  { code: 'TZ', name: 'Tanzania', flag: '🇹🇿', currency: 'TSh' },
+];
+
+const INTL_MOCK: Harvest[] = [
+  { id: 'gh1', cropType: 'Ghana Cocoa Beans', quantity: 50, unit: 'bag', pricePerUnit: 85000, quality: 'Grade A', status: 'available', location: { state: 'Ashanti, Ghana', town: 'Kumasi' }, farmer: { id: 'gf1', fullName: 'Kwame Asante Farms', rating: 4.9 }, createdAt: '2025-11-05' },
+  { id: 'gh2', cropType: 'Yam (Puna)', quantity: 800, unit: 'tuber', pricePerUnit: 2800, quality: 'Grade A', status: 'available', location: { state: 'Brong-Ahafo, Ghana', town: 'Sunyani' }, farmer: { id: 'gf2', fullName: 'Akosua Farms', rating: 4.7 }, createdAt: '2025-11-04' },
+  { id: 'ke1', cropType: 'Kenya AA Coffee', quantity: 30, unit: 'bag', pricePerUnit: 120000, quality: 'Grade A', status: 'available', location: { state: 'Nyeri, Kenya', town: 'Nyeri' }, farmer: { id: 'kf1', fullName: 'Wanjiku Coffee Co.', rating: 5.0 }, createdAt: '2025-11-03' },
+  { id: 'ke2', cropType: 'French Beans', quantity: 200, unit: 'kg', pricePerUnit: 1800, quality: 'Grade A', status: 'available', location: { state: 'Naivasha, Kenya', town: 'Naivasha' }, farmer: { id: 'kf2', fullName: 'Rift Valley Exports', rating: 4.8 }, createdAt: '2025-11-02' },
+  { id: 'za1', cropType: 'Premium Avocado', quantity: 150, unit: 'crate', pricePerUnit: 35000, quality: 'Grade A', status: 'available', location: { state: 'Limpopo, SA', town: 'Tzaneen' }, farmer: { id: 'zf1', fullName: 'Green Valley SA', rating: 4.6 }, createdAt: '2025-11-01' },
+  { id: 'et1', cropType: 'Ethiopian Sesame', quantity: 100, unit: 'bag', pricePerUnit: 58000, quality: 'Grade A', status: 'available', location: { state: 'Tigray, Ethiopia', town: 'Humera' }, farmer: { id: 'ef1', fullName: 'Nile Basin Farms', rating: 4.7 }, createdAt: '2025-10-31' },
+];
+
 export default function MarketplacePage() {
   const router = useRouter();
   const { addItem, hasItem } = useCart();
@@ -242,6 +262,11 @@ export default function MarketplacePage() {
   const [selectedState, setSelectedState] = useState('All States');
   const [sort, setSort] = useState('newest');
   const [added, setAdded] = useState<string | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState('NG');
+  const [showIntl, setShowIntl] = useState(false);
+  const [nearbyItems, setNearbyItems] = useState<Harvest[]>([]);
+  const [nearbyLoading, setNearbyLoading] = useState(false);
+  const [userLocation, setUserLocation] = useState<string | null>(null);
 
   const handleBuy = (item: Harvest) => {
     if (!isAuthenticated) { router.push('/auth?role=buyer'); return; }
@@ -279,7 +304,35 @@ export default function MarketplacePage() {
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
 
-  const filtered = items
+  // Nearby: use browser geolocation → reverse geocode state, filter MOCK by that state
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    setNearbyLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        // Map rough lat/lng to Nigerian states (simplified)
+        const { latitude, longitude } = pos.coords;
+        let state = 'Lagos';
+        if (latitude > 11) state = 'Kano';
+        else if (latitude > 9 && longitude > 7) state = 'Abuja (FCT)';
+        else if (latitude > 7 && longitude > 5) state = 'Plateau';
+        else if (latitude > 6 && longitude > 7) state = 'Anambra';
+        else if (latitude < 5) state = 'Rivers';
+        setUserLocation(state);
+        setNearbyItems(MOCK.filter(m => m.location?.state?.includes(state.split(' ')[0])));
+        setNearbyLoading(false);
+      },
+      () => {
+        setNearbyItems(MOCK.slice(0, 4));
+        setNearbyLoading(false);
+      },
+      { timeout: 5000 }
+    );
+  }, []);
+
+  const displayItems = showIntl ? INTL_MOCK : items;
+
+  const filtered = displayItems
     .filter(item => {
       if (!search) return true;
       const q = search.toLowerCase();
@@ -319,7 +372,7 @@ export default function MarketplacePage() {
               Farm Marketplace
             </h1>
             <p className="text-brand-200/60 text-lg">
-              Fresh produce from verified farmers across Nigeria. Every order is escrow-protected.
+              Fresh produce from verified farmers across Africa. Every order is escrow-protected.
             </p>
           </div>
 
@@ -385,6 +438,69 @@ export default function MarketplacePage() {
             <span>🔒</span> All trades escrow-protected
           </div>
         </div>
+
+        {/* ── Local / International toggle ── */}
+        <div className="flex items-center gap-3 mb-5 flex-wrap">
+          <div className="flex bg-gray-100 rounded-2xl p-1">
+            <button
+              onClick={() => setShowIntl(false)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${!showIntl ? 'bg-white text-brand-700 shadow-sm' : 'text-gray-500'}`}
+            >
+              🏠 Local Listings
+            </button>
+            <button
+              onClick={() => setShowIntl(true)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${showIntl ? 'bg-white text-brand-700 shadow-sm' : 'text-gray-500'}`}
+            >
+              🌍 International (Africa)
+            </button>
+          </div>
+
+          {/* Country selector — shown when international */}
+          {showIntl && (
+            <div className="flex gap-2 overflow-x-auto pb-1 flex-nowrap">
+              {COUNTRIES.filter(c => c.code !== 'NG').map(c => (
+                <button
+                  key={c.code}
+                  onClick={() => setSelectedCountry(c.code)}
+                  className={`flex items-center gap-1.5 flex-shrink-0 px-3 py-2 rounded-xl border text-sm font-semibold transition-all ${selectedCountry === c.code ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-gray-600 border-gray-200 hover:border-brand-300'}`}
+                >
+                  {c.flag} {c.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── Nearby section (local only) ── */}
+        {!showIntl && (nearbyLoading || nearbyItems.length > 0) && (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-xl">📍</span>
+              <h2 className="font-black text-gray-900 text-lg">
+                Near You{userLocation ? ` — ${userLocation}` : ''}
+              </h2>
+              {nearbyLoading && <div className="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />}
+            </div>
+            {nearbyLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[1,2,3,4].map(i => <div key={i} className="h-36 bg-gray-100 rounded-2xl animate-pulse" />)}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {nearbyItems.slice(0, 4).map(item => (
+                  <Link key={item.id} href={`/marketplace/${item.id}`}
+                    className="bg-white rounded-2xl border border-gray-100 p-4 hover:border-brand-200 hover:shadow-md transition-all group">
+                    <div className="text-4xl mb-2 text-center">{getCropEmoji(item.cropType)}</div>
+                    <p className="font-bold text-gray-900 text-sm truncate">{item.cropType}</p>
+                    <p className="text-brand-700 font-black text-sm">₦{item.pricePerUnit.toLocaleString()}<span className="text-gray-400 font-normal text-xs">/{item.unit}</span></p>
+                    <p className="text-xs text-gray-400 mt-1 truncate">📍 {item.location?.town}, {item.location?.state}</p>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── Category chips ── */}
         <div className="flex gap-2 overflow-x-auto pb-2 mb-6 -mx-1 px-1">

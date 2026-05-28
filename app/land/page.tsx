@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import ShareModal from '../../components/ShareModal';
+import MakeOfferModal from '../../components/MakeOfferModal';
 
 const LANDS = [
   {
@@ -25,6 +27,7 @@ const LANDS = [
     description: 'Premium farmland in the food basket of Nigeria. Well-irrigated, loamy soil perfect for wet-season rice and dry-season maize. Access road leads directly to the Makurdi main market.',
     available: 'March 2026',
     tenure: '1 season (6 months)',
+    negotiable: true,
   },
   {
     id: 2,
@@ -47,6 +50,7 @@ const LANDS = [
     description: 'Located in Kano\'s famous fadama belt. Excellent for dry-season vegetables. Canal irrigation from Kano River project. Tomato market 2km away.',
     available: 'Immediately',
     tenure: 'Flexible (3-12 months)',
+    negotiable: false,
   },
   {
     id: 3,
@@ -69,6 +73,7 @@ const LANDS = [
     description: 'Established 10-hectare cocoa plantation with mature trees (8-15 years). Existing processing shed. Ideal for investor looking to enter cocoa export market with immediate production.',
     available: 'Negotiable',
     tenure: 'Outright sale with C of O',
+    negotiable: true,
   },
   {
     id: 4,
@@ -91,6 +96,7 @@ const LANDS = [
     description: 'Cool climate land on the Jos Plateau — Nigeria\'s best location for exotic vegetables and strawberry farming. Spring water available year-round. Perfect for greenhouse investment.',
     available: 'February 2026',
     tenure: '1–3 year lease',
+    negotiable: true,
   },
   {
     id: 5,
@@ -113,6 +119,7 @@ const LANDS = [
     description: 'Large-scale cassava belt land near Ijebu Ode. Adjacent to a garri processing factory for direct offtake. Good for contract farming with guaranteed buyers.',
     available: 'Immediately',
     tenure: '1–5 year lease',
+    negotiable: false,
   },
   {
     id: 6,
@@ -135,6 +142,7 @@ const LANDS = [
     description: 'Established fish farm plot with 3 existing concrete ponds along the Niger Delta. River water access for continuous farming. Fish market 500m away. Ideal for aquaculture investment.',
     available: 'Negotiable',
     tenure: 'Outright sale with deed',
+    negotiable: true,
   },
 ];
 
@@ -148,6 +156,8 @@ export default function LandPage() {
   const [showInquiry, setShowInquiry] = useState(false);
   const [inquiryForm, setInquiryForm] = useState({ name: '', phone: '', message: '' });
   const [sent, setSent] = useState(false);
+  const [shareLand, setShareLand] = useState<typeof LANDS[0] | null>(null);
+  const [offerLand, setOfferLand] = useState<typeof LANDS[0] | null>(null);
 
   const filtered = LANDS.filter(l => {
     if (typeFilter !== 'all' && l.type !== typeFilter) return false;
@@ -256,6 +266,11 @@ export default function LandPage() {
                   </div>
 
                   <div className="mt-auto">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${land.negotiable ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-500 border-gray-200'}`}>
+                        {land.negotiable ? '🤝 Negotiable' : '🔒 Fixed Price'}
+                      </span>
+                    </div>
                     <div className="flex items-baseline justify-between mb-4">
                       <div>
                         <span className="text-2xl font-black text-brand-600">₦{land.price.toLocaleString()}</span>
@@ -263,10 +278,16 @@ export default function LandPage() {
                       </div>
                       <span className="text-xs text-gray-500">{land.available}</span>
                     </div>
-                    <button onClick={() => { setSelected(land); setShowInquiry(false); }}
-                      className="w-full btn-primary text-sm py-2.5">
-                      View Details
-                    </button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button onClick={() => { setSelected(land); setShowInquiry(false); }}
+                        className="btn-primary text-sm py-2.5">
+                        View Details
+                      </button>
+                      <button onClick={() => setShareLand(land)}
+                        className="py-2.5 rounded-xl text-sm font-bold border border-gray-200 text-gray-600 hover:border-emerald-300 hover:text-emerald-700 transition-all">
+                        🔗 Share
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -364,9 +385,21 @@ export default function LandPage() {
               </div>
 
               {!showInquiry ? (
-                <button onClick={() => setShowInquiry(true)} className="w-full btn-primary py-3">
-                  Send Inquiry to Owner
-                </button>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <button onClick={() => setShowInquiry(true)} className="flex-1 btn-primary py-3 text-sm">
+                      Send Inquiry
+                    </button>
+                    <button onClick={() => setShareLand(selected)} className="px-4 py-3 rounded-xl border border-gray-200 text-gray-600 hover:border-emerald-300 hover:text-emerald-700 font-bold text-sm transition-all">
+                      🔗 Share
+                    </button>
+                  </div>
+                  {selected.negotiable && (
+                    <button onClick={() => { setOfferLand(selected); setSelected(null); }} className="w-full border border-emerald-300 text-emerald-700 font-bold py-2.5 rounded-xl text-sm hover:bg-emerald-50 transition-colors">
+                      🤝 Make an Offer
+                    </button>
+                  )}
+                </div>
               ) : sent ? (
                 <div className="text-center py-4">
                   <div className="text-4xl mb-2">✅</div>
@@ -383,6 +416,25 @@ export default function LandPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {shareLand && (
+        <ShareModal
+          title={shareLand.title}
+          description={`₦${shareLand.price.toLocaleString()} ${shareLand.period} · ${shareLand.location}`}
+          onClose={() => setShareLand(null)}
+        />
+      )}
+
+      {offerLand && (
+        <MakeOfferModal
+          listingTitle={offerLand.title}
+          askingPrice={offerLand.price}
+          unit={offerLand.type === 'sale' ? 'plot' : 'season'}
+          sellerName={offerLand.owner}
+          sellerType="landlord"
+          onClose={() => setOfferLand(null)}
+        />
       )}
     </>
   );

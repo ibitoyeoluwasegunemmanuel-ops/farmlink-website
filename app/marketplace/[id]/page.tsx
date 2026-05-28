@@ -6,6 +6,8 @@ import Navbar from '../../../components/Navbar';
 import Footer from '../../../components/Footer';
 import { useCart } from '../../../contexts/CartContext';
 import { useAuth } from '../../../contexts/AuthContext';
+import ShareModal from '../../../components/ShareModal';
+import MakeOfferModal from '../../../components/MakeOfferModal';
 
 const API = process.env.NEXT_PUBLIC_API_URL ||
   'https://farm-link-bmiv-cpk3unx1j-ibitoyeoluwasegunemmanuel-ops-projects.vercel.app/api';
@@ -65,6 +67,8 @@ export default function ProductDetailPage() {
   const [bulkMode, setBulkMode] = useState(false);
   const [bulkQty, setBulkQty] = useState('');
   const [bulkSent, setBulkSent] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+  const [showOffer, setShowOffer] = useState(false);
 
   useEffect(() => {
     const id = params.id as string;
@@ -256,7 +260,19 @@ export default function ProductDetailPage() {
                     {added ? '✅ In Cart' : '🛒 Add to Cart'}
                   </button>
                 </div>
-                <div className="mt-4 space-y-2 text-xs text-gray-400">
+                {/* Make offer + Share */}
+                <div className="grid grid-cols-2 gap-2 mt-3">
+                  <button onClick={() => setShowOffer(true)}
+                    className="flex items-center justify-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-bold py-2.5 rounded-xl text-xs transition-colors">
+                    🤝 Make Offer
+                  </button>
+                  <button onClick={() => setShowShare(true)}
+                    className="flex items-center justify-center gap-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 font-bold py-2.5 rounded-xl text-xs transition-colors">
+                    🔗 Share
+                  </button>
+                </div>
+
+                <div className="mt-3 space-y-2 text-xs text-gray-400">
                   <div className="flex items-center gap-2"><span>🔒</span> Escrow-protected payment</div>
                   <div className="flex items-center gap-2"><span>🚚</span> Delivery available to your state</div>
                   <div className="flex items-center gap-2"><span>↩️</span> Dispute resolution within 48hrs</div>
@@ -336,6 +352,25 @@ export default function ProductDetailPage() {
       </div>
 
       <Footer />
+
+      {showShare && (
+        <ShareModal
+          title={product.cropType}
+          description={`₦${product.pricePerUnit.toLocaleString()}/${product.unit} · ${product.location?.state}`}
+          onClose={() => setShowShare(false)}
+        />
+      )}
+
+      {showOffer && (
+        <MakeOfferModal
+          listingTitle={product.cropType}
+          askingPrice={product.pricePerUnit}
+          unit={product.unit}
+          sellerName={product.farmer?.farmName || product.farmer?.fullName || 'Farmer'}
+          sellerType="farmer"
+          onClose={() => setShowOffer(false)}
+        />
+      )}
     </div>
   );
 }

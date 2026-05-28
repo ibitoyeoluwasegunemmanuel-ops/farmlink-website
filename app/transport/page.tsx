@@ -1,23 +1,23 @@
 'use client';
 import { useState } from 'react';
-import Link from 'next/link';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import ShareModal from '../../components/ShareModal';
+import MakeOfferModal from '../../components/MakeOfferModal';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
 const DRIVERS = [
-  { id: 't1', name: 'Ibrahim Musa', avatar: 'IM', avatarBg: 'bg-amber-600', vehicle: '10-Tonne Cargo Truck', plate: 'KN 452 GHT', routes: ['Kano → Lagos', 'Kano → Abuja', 'Kano → Port Harcourt'], baseRate: 85000, perKm: 150, available: true, trips: 134, rating: 4.9, reviews: 98, verified: true, capacity: '10,000 kg', state: 'Kano', experience: '8 years', phone: '+234 810 000 0001', crops: ['Maize', 'Rice', 'Groundnut'], joined: '2023' },
-  { id: 't2', name: 'Adamu Hassan', avatar: 'AH', avatarBg: 'bg-blue-600', vehicle: '5-Tonne Pickup Van', plate: 'KD 221 ABJ', routes: ['Kaduna → Abuja', 'Kaduna → Kano', 'Kaduna → Lagos'], baseRate: 45000, perKm: 100, available: true, trips: 83, rating: 4.8, reviews: 61, verified: true, capacity: '5,000 kg', state: 'Kaduna', experience: '5 years', phone: '+234 810 000 0002', crops: ['Tomatoes', 'Onions', 'Peppers'], joined: '2023' },
-  { id: 't3', name: 'Chukwu Drivers Ltd', avatar: 'CD', avatarBg: 'bg-green-700', vehicle: 'Refrigerated Truck', plate: 'AN 097 LGS', routes: ['Anambra → Lagos', 'Anambra → Abuja', 'Anambra → PH'], baseRate: 120000, perKm: 200, available: false, trips: 22, rating: 4.7, reviews: 19, verified: true, capacity: '8,000 kg', state: 'Anambra', experience: '4 years', phone: '+234 810 000 0003', crops: ['Yam', 'Cassava', 'Vegetables'], joined: '2024' },
-  { id: 't4', name: 'Bello Abdullahi', avatar: 'BA', avatarBg: 'bg-purple-600', vehicle: 'Open Flatbed Truck', plate: 'KT 773 ABJ', routes: ['Katsina → All States'], baseRate: 60000, perKm: 120, available: true, trips: 209, rating: 4.6, reviews: 154, verified: true, capacity: '12,000 kg', state: 'Katsina', experience: '10 years', phone: '+234 810 000 0004', crops: ['Sorghum', 'Millet', 'Maize'], joined: '2022' },
-  { id: 't5', name: 'Tunde Logistics', avatar: 'TL', avatarBg: 'bg-rose-600', vehicle: 'Mini Van (3-Tonne)', plate: 'LG 881 ABJ', routes: ['Lagos → South West', 'Lagos → Abuja'], baseRate: 35000, perKm: 90, available: true, trips: 341, rating: 4.9, reviews: 275, verified: true, capacity: '3,000 kg', state: 'Lagos', experience: '6 years', phone: '+234 810 000 0005', crops: ['Vegetables', 'Fruits', 'Eggs'], joined: '2022' },
-  { id: 't6', name: 'Hauwa Transport Co.', avatar: 'HT', avatarBg: 'bg-teal-600', vehicle: 'Agricultural Tanker', plate: 'GM 554 ABJ', routes: ['Gombe → North East', 'Gombe → Abuja'], baseRate: 95000, perKm: 170, available: true, trips: 31, rating: 4.5, reviews: 22, verified: false, capacity: '15,000 L', state: 'Gombe', experience: '3 years', phone: '+234 810 000 0006', crops: ['Palm Oil', 'Groundnut Oil'], joined: '2024' },
-  { id: 't7', name: 'Emeka Fast Haulage', avatar: 'EF', avatarBg: 'bg-orange-600', vehicle: '7-Tonne Box Truck', plate: 'IM 334 LGS', routes: ['Imo → Lagos', 'Imo → Abuja', 'Imo → PH'], baseRate: 65000, perKm: 130, available: true, trips: 77, rating: 4.7, reviews: 55, verified: true, capacity: '7,000 kg', state: 'Imo', experience: '7 years', phone: '+234 810 000 0007', crops: ['Yam', 'Cassava', 'Rice'], joined: '2023' },
-  { id: 't8', name: 'Fatima Agro-Truck', avatar: 'FA', avatarBg: 'bg-indigo-600', vehicle: 'Flatbed + Crane', plate: 'SO 119 KN', routes: ['Sokoto → Kano', 'Sokoto → Abuja'], baseRate: 75000, perKm: 140, available: false, trips: 44, rating: 4.8, reviews: 38, verified: true, capacity: '10,000 kg', state: 'Sokoto', experience: '5 years', phone: '+234 810 000 0008', crops: ['Cotton', 'Groundnut', 'Maize'], joined: '2023' },
+  { id: 't1', name: 'Ibrahim Musa', avatar: 'IM', avatarBg: 'bg-amber-600', vehicle: '10-Tonne Cargo Truck', plate: 'KN 452 GHT', routes: ['Kano → Lagos', 'Kano → Abuja', 'Kano → Port Harcourt'], baseRate: 85000, perKm: 150, available: true, negotiable: true, trips: 134, rating: 4.9, reviews: 98, verified: true, capacity: '10,000 kg', state: 'Kano', experience: '8 years', phone: '+234 810 000 0001', crops: ['Maize', 'Rice', 'Groundnut'], joined: '2023' },
+  { id: 't2', name: 'Adamu Hassan', avatar: 'AH', avatarBg: 'bg-blue-600', vehicle: '5-Tonne Pickup Van', plate: 'KD 221 ABJ', routes: ['Kaduna → Abuja', 'Kaduna → Kano', 'Kaduna → Lagos'], baseRate: 45000, perKm: 100, available: true, negotiable: false, trips: 83, rating: 4.8, reviews: 61, verified: true, capacity: '5,000 kg', state: 'Kaduna', experience: '5 years', phone: '+234 810 000 0002', crops: ['Tomatoes', 'Onions', 'Peppers'], joined: '2023' },
+  { id: 't3', name: 'Chukwu Drivers Ltd', avatar: 'CD', avatarBg: 'bg-green-700', vehicle: 'Refrigerated Truck', plate: 'AN 097 LGS', routes: ['Anambra → Lagos', 'Anambra → Abuja', 'Anambra → PH'], baseRate: 120000, perKm: 200, available: false, negotiable: true, trips: 22, rating: 4.7, reviews: 19, verified: true, capacity: '8,000 kg', state: 'Anambra', experience: '4 years', phone: '+234 810 000 0003', crops: ['Yam', 'Cassava', 'Vegetables'], joined: '2024' },
+  { id: 't4', name: 'Bello Abdullahi', avatar: 'BA', avatarBg: 'bg-purple-600', vehicle: 'Open Flatbed Truck', plate: 'KT 773 ABJ', routes: ['Katsina → All States'], baseRate: 60000, perKm: 120, available: true, negotiable: true, trips: 209, rating: 4.6, reviews: 154, verified: true, capacity: '12,000 kg', state: 'Katsina', experience: '10 years', phone: '+234 810 000 0004', crops: ['Sorghum', 'Millet', 'Maize'], joined: '2022' },
+  { id: 't5', name: 'Tunde Logistics', avatar: 'TL', avatarBg: 'bg-rose-600', vehicle: 'Mini Van (3-Tonne)', plate: 'LG 881 ABJ', routes: ['Lagos → South West', 'Lagos → Abuja'], baseRate: 35000, perKm: 90, available: true, negotiable: false, trips: 341, rating: 4.9, reviews: 275, verified: true, capacity: '3,000 kg', state: 'Lagos', experience: '6 years', phone: '+234 810 000 0005', crops: ['Vegetables', 'Fruits', 'Eggs'], joined: '2022' },
+  { id: 't6', name: 'Hauwa Transport Co.', avatar: 'HT', avatarBg: 'bg-teal-600', vehicle: 'Agricultural Tanker', plate: 'GM 554 ABJ', routes: ['Gombe → North East', 'Gombe → Abuja'], baseRate: 95000, perKm: 170, available: true, negotiable: true, trips: 31, rating: 4.5, reviews: 22, verified: false, capacity: '15,000 L', state: 'Gombe', experience: '3 years', phone: '+234 810 000 0006', crops: ['Palm Oil', 'Groundnut Oil'], joined: '2024' },
+  { id: 't7', name: 'Emeka Fast Haulage', avatar: 'EF', avatarBg: 'bg-orange-600', vehicle: '7-Tonne Box Truck', plate: 'IM 334 LGS', routes: ['Imo → Lagos', 'Imo → Abuja', 'Imo → PH'], baseRate: 65000, perKm: 130, available: true, negotiable: false, trips: 77, rating: 4.7, reviews: 55, verified: true, capacity: '7,000 kg', state: 'Imo', experience: '7 years', phone: '+234 810 000 0007', crops: ['Yam', 'Cassava', 'Rice'], joined: '2023' },
+  { id: 't8', name: 'Fatima Agro-Truck', avatar: 'FA', avatarBg: 'bg-indigo-600', vehicle: 'Flatbed + Crane', plate: 'SO 119 KN', routes: ['Sokoto → Kano', 'Sokoto → Abuja'], baseRate: 75000, perKm: 140, available: false, negotiable: true, trips: 44, rating: 4.8, reviews: 38, verified: true, capacity: '10,000 kg', state: 'Sokoto', experience: '5 years', phone: '+234 810 000 0008', crops: ['Cotton', 'Groundnut', 'Maize'], joined: '2023' },
 ];
 
-const VEHICLE_TYPES = ['All Types', '10-Tonne Truck', '5-Tonne Van', 'Refrigerated Truck', 'Flatbed Truck', 'Mini Van', 'Tanker'];
 const STATES = ['All States', 'Kano', 'Kaduna', 'Lagos', 'Anambra', 'Katsina', 'Gombe', 'Imo', 'Sokoto'];
 
 export default function TransportPage() {
@@ -28,6 +28,8 @@ export default function TransportPage() {
   const [booking, setBooking] = useState({ from: '', to: '', date: '', cargo: '', weight: '' });
   const [submitting, setSubmitting] = useState(false);
   const [booked, setBooked] = useState(false);
+  const [shareDriver, setShareDriver] = useState<typeof DRIVERS[0] | null>(null);
+  const [offerDriver, setOfferDriver] = useState<typeof DRIVERS[0] | null>(null);
 
   const filtered = DRIVERS.filter(d => {
     if (filter.available && !d.available) return false;
@@ -185,13 +187,28 @@ export default function TransportPage() {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => driver.available && setSelected(driver)}
-                      disabled={!driver.available}
-                      className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all ${driver.available ? 'bg-amber-600 hover:bg-amber-500 active:scale-95 text-white' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
-                    >
-                      {driver.available ? 'Book This Driver →' : 'Currently Unavailable'}
-                    </button>
+                    {/* Negotiable badge */}
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${driver.negotiable ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-500 border-gray-200'}`}>
+                        {driver.negotiable ? '🤝 Negotiable' : '🔒 Fixed Price'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => driver.available && setSelected(driver)}
+                        disabled={!driver.available}
+                        className={`py-2.5 rounded-xl text-sm font-bold transition-all ${driver.available ? 'bg-amber-600 hover:bg-amber-500 active:scale-95 text-white' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
+                      >
+                        {driver.available ? 'Book →' : 'Unavailable'}
+                      </button>
+                      <button
+                        onClick={() => setShareDriver(driver)}
+                        className="py-2.5 rounded-xl text-sm font-bold border border-gray-200 text-gray-600 hover:border-amber-300 hover:text-amber-700 transition-all"
+                      >
+                        🔗 Share
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -277,6 +294,15 @@ export default function TransportPage() {
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Cargo Description *</label>
                 <input value={booking.cargo} onChange={e => setBooking(b => ({ ...b, cargo: e.target.value }))} placeholder="e.g. 500 bags of maize" required className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-400" />
               </div>
+              {selected.negotiable && (
+                <button
+                  type="button"
+                  onClick={() => { setOfferDriver(selected); setSelected(null); }}
+                  className="w-full border border-amber-300 text-amber-700 font-bold py-2.5 rounded-xl text-sm hover:bg-amber-50 transition-colors"
+                >
+                  🤝 Make an Offer Instead
+                </button>
+              )}
               <button type="submit" disabled={submitting} className="w-full bg-amber-600 hover:bg-amber-500 disabled:opacity-60 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
                 {submitting ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : '🚛'}
                 {submitting ? 'Sending Request...' : 'Send Booking Request'}
@@ -284,6 +310,25 @@ export default function TransportPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {shareDriver && (
+        <ShareModal
+          title={`${shareDriver.vehicle} — ${shareDriver.name}`}
+          description={`${shareDriver.routes[0]} · ₦${shareDriver.baseRate.toLocaleString()} base rate`}
+          onClose={() => setShareDriver(null)}
+        />
+      )}
+
+      {offerDriver && (
+        <MakeOfferModal
+          listingTitle={`${offerDriver.vehicle} — ${offerDriver.routes[0]}`}
+          askingPrice={offerDriver.baseRate}
+          unit="trip"
+          sellerName={offerDriver.name}
+          sellerType="driver"
+          onClose={() => setOfferDriver(null)}
+        />
       )}
     </div>
   );

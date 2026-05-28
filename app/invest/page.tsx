@@ -1,6 +1,5 @@
 'use client';
 import { useState } from 'react';
-import Link from 'next/link';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { useAuth } from '../../contexts/AuthContext';
@@ -71,24 +70,68 @@ const RISK_COLORS: Record<string, string> = {
 
 const CATEGORIES = ['All', 'Grain Farming', 'Livestock', 'Horticulture', 'Cash Crops', 'Infrastructure'];
 
+const INTL_OPPORTUNITIES = [
+  {
+    id: 'gh_inv1', title: 'Ghana Cocoa Farm — Ashanti Region', farmer: 'Kwame Asante Cooperative', farmerInitials: 'KA', farmerBg: 'bg-yellow-700',
+    state: 'Ashanti, Ghana', lga: 'Kumasi', target: 3000000, raised: 1800000, returnPct: 35, durationMonths: 8,
+    risk: 'Medium', category: 'Cash Crops', minInvestment: 50000, investors: 14, verified: true, country: 'GH',
+    desc: 'Premium cocoa beans from Ghana\'s Ashanti region with confirmed EU export contracts. Ghana produces 20% of global cocoa supply. Returns in Nigerian Naira equivalent.',
+    tags: ['Cocoa', 'Ghana', 'Export'], milestones: ['Farm certified', 'EU buyer confirmed'], returns: [{ period: 'Month 8', event: 'Harvest + payout in ₦ equivalent' }],
+  },
+  {
+    id: 'ke_inv1', title: 'Kenya AA Coffee — Nyeri County', farmer: 'Wanjiku Coffee Cooperative', farmerInitials: 'WC', farmerBg: 'bg-brown-700',
+    state: 'Nyeri, Kenya', lga: 'Nyeri Town', target: 5000000, raised: 2100000, returnPct: 42, durationMonths: 10,
+    risk: 'Medium', category: 'Cash Crops', minInvestment: 75000, investors: 9, verified: true, country: 'KE',
+    desc: 'Kenya AA is among the world\'s most sought-after coffee varieties. This cooperative of 45 smallholders has a confirmed purchase contract with Starbucks supplier.',
+    tags: ['Coffee', 'Kenya', 'Export'], milestones: ['Cooperative formed', 'Starbucks agreement signed'], returns: [{ period: 'Month 10', event: 'Harvest + returns in ₦ equivalent' }],
+  },
+  {
+    id: 'za_inv1', title: 'South Africa Avocado Farm — Limpopo', farmer: 'Green Valley SA', farmerInitials: 'GV', farmerBg: 'bg-green-700',
+    state: 'Limpopo, South Africa', lga: 'Tzaneen', target: 8000000, raised: 3500000, returnPct: 38, durationMonths: 12,
+    risk: 'Low', category: 'Horticulture', minInvestment: 100000, investors: 22, verified: true, country: 'ZA',
+    desc: 'Avocado demand has surged 300% in Europe over 5 years. This established farm supplies Tesco and Walmart SA. Low risk due to existing trees (no planting needed).',
+    tags: ['Avocado', 'South Africa', 'Export'], milestones: ['Trees mature', 'Tesco contract renewed'], returns: [{ period: 'Month 6', event: 'First harvest payout 50%' }, { period: 'Month 12', event: 'Second harvest + full payout' }],
+  },
+  {
+    id: 'et_inv1', title: 'Ethiopia Sesame + Teff — Tigray', farmer: 'Nile Basin Farms', farmerInitials: 'NB', farmerBg: 'bg-orange-700',
+    state: 'Tigray, Ethiopia', lga: 'Humera', target: 2500000, raised: 700000, returnPct: 30, durationMonths: 6,
+    risk: 'Medium', category: 'Cash Crops', minInvestment: 50000, investors: 5, verified: true, country: 'ET',
+    desc: 'Ethiopia produces 70% of global teff (now trendy in Europe as gluten-free grain). Sesame is a major export commodity. Returns payable in ₦ at prevailing exchange rates.',
+    tags: ['Sesame', 'Teff', 'Ethiopia'], milestones: ['Land ready', 'EU organic certification pending'], returns: [{ period: 'Month 6', event: 'Full harvest + payout' }],
+  },
+];
+
+const INVEST_COUNTRIES = [
+  { code: 'NG', name: 'Nigeria', flag: '🇳🇬' },
+  { code: 'GH', name: 'Ghana', flag: '🇬🇭' },
+  { code: 'KE', name: 'Kenya', flag: '🇰🇪' },
+  { code: 'ZA', name: 'South Africa', flag: '🇿🇦' },
+  { code: 'ET', name: 'Ethiopia', flag: '🇪🇹' },
+];
+
 export default function InvestPage() {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
   const [category, setCategory] = useState('All');
   const [riskFilter, setRiskFilter] = useState('All');
   const [selected, setSelected] = useState<typeof OPPORTUNITIES[0] | null>(null);
+  const [investCountry, setInvestCountry] = useState('NG');
   const [amount, setAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [invested, setInvested] = useState(false);
 
-  const filtered = OPPORTUNITIES.filter(o => {
+  const activePool = investCountry === 'NG'
+    ? OPPORTUNITIES
+    : INTL_OPPORTUNITIES.filter(o => o.country === investCountry);
+
+  const filtered = activePool.filter(o => {
     if (category !== 'All' && o.category !== category) return false;
     if (riskFilter !== 'All' && o.risk !== riskFilter) return false;
     return true;
   });
 
   const totalFunded = OPPORTUNITIES.reduce((s, o) => s + o.raised, 0);
-  const totalTarget = OPPORTUNITIES.reduce((s, o) => s + o.target, 0);
+  const allOpen = [...OPPORTUNITIES, ...INTL_OPPORTUNITIES].filter(o => o.raised < o.target).length;
 
   const handleInvest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,14 +156,14 @@ export default function InvestPage() {
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 bg-brand-500/15 border border-brand-500/25 rounded-full px-4 py-1.5 text-sm text-brand-300 font-medium mb-5">
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              {OPPORTUNITIES.filter(o => o.raised < o.target).length} opportunities open for investment
+              {allOpen} opportunities open across Africa
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-white leading-tight mb-4">
-              Fund Nigerian Farms.<br />
+              Fund African Farms.<br />
               <span className="text-brand-400">Earn Real Returns.</span>
             </h1>
             <p className="text-brand-200/70 text-lg mb-8 leading-relaxed">
-              Invest in verified smallholder farms across Nigeria. Earn 15–28% returns per harvest cycle. Every naira is protected by FarmLink escrow until you confirm returns received.
+              Invest in verified farms across Nigeria, Ghana, Kenya, South Africa and more. Earn 15–42% returns per harvest cycle. Every naira is protected by FarmLink escrow until you confirm returns received.
             </p>
             <div className="grid grid-cols-3 gap-4 max-w-xl">
               {[
@@ -172,6 +215,32 @@ export default function InvestPage() {
             </div>
           </div>
         )}
+
+        {/* Country switcher */}
+        <div className="mb-6">
+          <p className="text-xs font-bold text-gray-400 uppercase mb-3">Invest in farms from</p>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {INVEST_COUNTRIES.map(c => (
+              <button
+                key={c.code}
+                onClick={() => { setInvestCountry(c.code); setCategory('All'); setRiskFilter('All'); }}
+                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold border transition-all ${investCountry === c.code ? 'bg-brand-700 text-white border-brand-700' : 'bg-white text-gray-600 border-gray-200 hover:border-brand-300'}`}
+              >
+                <span>{c.flag}</span>
+                <span>{c.name}</span>
+              </button>
+            ))}
+          </div>
+          {investCountry !== 'NG' && (
+            <div className="mt-3 bg-blue-50 border border-blue-200 rounded-2xl p-4 flex gap-3 text-sm text-blue-700">
+              <span className="text-xl flex-shrink-0">🌍</span>
+              <div>
+                <p className="font-bold mb-0.5">Cross-border investment — {INVEST_COUNTRIES.find(c => c.code === investCountry)?.name}</p>
+                <p className="text-xs text-blue-600 leading-relaxed">Returns are calculated and paid in Nigerian Naira (₦) at the prevailing exchange rate on the payout date. FarmLink works with licensed money transfer operators to settle cross-border returns. Your investment is still protected by FarmLink escrow.</p>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
