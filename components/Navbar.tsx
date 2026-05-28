@@ -118,18 +118,25 @@ export default function Navbar() {
               <span className="uppercase text-xs font-bold">{lang}</span>
             </button>
             {langOpen && (
-              <div className="absolute right-0 top-full mt-2 w-44 bg-white rounded-2xl border border-gray-100 shadow-elevated overflow-hidden z-50">
-                {LANG_OPTIONS.map(opt => (
-                  <button
-                    key={opt.code}
-                    onClick={() => { setLang(opt.code); setLangOpen(false); }}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-brand-50 ${lang === opt.code ? 'bg-brand-50 text-brand-700 font-bold' : 'text-gray-700'}`}
-                  >
-                    <span>{opt.flag}</span>
-                    <span>{opt.native}</span>
-                    {lang === opt.code && <span className="ml-auto text-brand-600 text-xs">✓</span>}
-                  </button>
-                ))}
+              <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl border border-gray-100 shadow-elevated overflow-hidden z-50 max-h-80 overflow-y-auto">
+                {LANG_OPTIONS.map((opt, i) => {
+                  const prevRegion = i > 0 ? LANG_OPTIONS[i - 1].region : null;
+                  return (
+                    <div key={opt.code}>
+                      {opt.region !== prevRegion && (
+                        <p className="text-[10px] font-bold text-gray-400 uppercase px-4 pt-2.5 pb-1">{opt.region}</p>
+                      )}
+                      <button
+                        onClick={() => { setLang(opt.code); setLangOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-brand-50 ${lang === opt.code ? 'bg-brand-50 text-brand-700 font-bold' : 'text-gray-700'}`}
+                      >
+                        <span>{opt.flag}</span>
+                        <span>{opt.native}</span>
+                        {lang === opt.code && <span className="ml-auto text-brand-600 text-xs">✓</span>}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -315,14 +322,16 @@ export default function Navbar() {
             ))}
 
             {/* Language picker — mobile */}
-            <div className="flex items-center gap-2 px-3 py-2 mt-1 border-t border-gray-100 pt-3">
-              <span className="text-xs text-gray-400 font-medium mr-1">Language:</span>
-              {LANG_OPTIONS.map(opt => (
-                <button key={opt.code} onClick={() => setLang(opt.code)}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${lang === opt.code ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
-                  {opt.flag} {opt.code.toUpperCase()}
-                </button>
-              ))}
+            <div className="px-3 py-2 mt-1 border-t border-gray-100 pt-3">
+              <p className="text-xs text-gray-400 font-medium mb-2">🌍 Language</p>
+              <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+                {LANG_OPTIONS.map(opt => (
+                  <button key={opt.code} onClick={() => setLang(opt.code)}
+                    className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold transition-all ${lang === opt.code ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                    {opt.flag} {opt.code.toUpperCase()}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {isAuthenticated ? (
