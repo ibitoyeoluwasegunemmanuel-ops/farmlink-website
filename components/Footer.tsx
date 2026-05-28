@@ -1,7 +1,22 @@
 import Link from 'next/link';
 
-const PLATFORM_LINKS = ['Marketplace', 'Logistics', 'Escrow Payments', 'AI Crop Scanner', 'Market Prices', 'Weather Alerts'];
-const USER_LINKS = ['For Farmers', 'For Buyers', 'For Transporters', 'For Investors'];
+const PLATFORM_LINKS = [
+  { label: 'Marketplace', href: '/marketplace' },
+  { label: 'Logistics', href: '/logistics' },
+  { label: 'Transport', href: '/transport' },
+  { label: 'FarmTok', href: '/farmtok' },
+  { label: 'Market Prices', href: '/market-prices' },
+  { label: 'Weather & Advisory', href: '/weather' },
+  { label: 'Invest', href: '/invest' },
+];
+const USER_LINKS = [
+  { label: 'For Farmers', href: '/join' },
+  { label: 'For Buyers', href: '/join' },
+  { label: 'For Transporters', href: '/join' },
+  { label: 'For Investors', href: '/invest' },
+  { label: 'Knowledge Hub', href: '/learn' },
+  { label: 'Community', href: '/community' },
+];
 const LEGAL_LINKS = ['Privacy Policy', 'Terms of Service', 'Cookie Policy'];
 
 export default function Footer() {
@@ -46,10 +61,10 @@ export default function Footer() {
             <h3 className="font-semibold text-white text-sm uppercase tracking-widest mb-5 opacity-60">Platform</h3>
             <ul className="space-y-3">
               {PLATFORM_LINKS.map(item => (
-                <li key={item}>
-                  <a href="#" className="text-gray-400 text-sm hover:text-brand-300 transition-colors">
-                    {item}
-                  </a>
+                <li key={item.label}>
+                  <Link href={item.href} className="text-gray-400 text-sm hover:text-brand-300 transition-colors">
+                    {item.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -57,13 +72,13 @@ export default function Footer() {
 
           {/* Users */}
           <div>
-            <h3 className="font-semibold text-white text-sm uppercase tracking-widest mb-5 opacity-60">Who It&apos;s For</h3>
+            <h3 className="font-semibold text-white text-sm uppercase tracking-widest mb-5 opacity-60">Explore</h3>
             <ul className="space-y-3">
               {USER_LINKS.map(item => (
-                <li key={item}>
-                  <a href="#" className="text-gray-400 text-sm hover:text-brand-300 transition-colors">
-                    {item}
-                  </a>
+                <li key={item.label}>
+                  <Link href={item.href} className="text-gray-400 text-sm hover:text-brand-300 transition-colors">
+                    {item.label}
+                  </Link>
                 </li>
               ))}
             </ul>

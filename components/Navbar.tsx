@@ -37,21 +37,21 @@ export default function Navbar() {
 
   const navLinks = isAuthenticated
     ? [
+        { href: '/feed', label: '🌱 Feed' },
         { href: '/marketplace', label: 'Marketplace' },
+        { href: '/logistics', label: 'Logistics' },
         { href: '/transport', label: 'Transport' },
-        { href: '/equipment', label: 'Equipment' },
         { href: '/invest', label: 'Invest' },
-        { href: '/land', label: 'Land' },
-        { href: '/blog', label: 'Blog' },
-        { href: '/orders', label: 'My Orders' },
+        { href: '/farmtok', label: '🎬 FarmTok' },
+        { href: '/community', label: 'Community' },
       ]
     : [
         { href: '/marketplace', label: 'Marketplace' },
         { href: '/transport', label: 'Transport' },
-        { href: '/equipment', label: 'Equipment' },
+        { href: '/logistics', label: 'Logistics' },
         { href: '/invest', label: 'Invest' },
         { href: '/land', label: 'Land' },
-        { href: '/blog', label: 'Blog' },
+        { href: '/learn', label: 'Learn' },
         { href: '/join', label: 'Join' },
       ];
 
@@ -212,10 +212,16 @@ export default function Navbar() {
                     {[
                       { href: '/dashboard', label: 'Dashboard', icon: '📊' },
                       { href: '/orders', label: 'My Orders', icon: '📦' },
+                      { href: '/logistics', label: 'Logistics', icon: '🚚' },
                       { href: '/messages', label: 'Messages', icon: '💬' },
                       { href: '/wallet', label: 'Wallet', icon: '💳' },
+                      { href: '/weather', label: 'Weather', icon: '🌤️' },
+                      { href: '/learn', label: 'Knowledge Hub', icon: '🎓' },
+                      { href: '/community', label: 'Community', icon: '👥' },
                       { href: '/referral', label: 'Referral & Earn', icon: '🎁' },
                       { href: '/profile', label: 'My Profile', icon: '👤' },
+                      { href: '/settings', label: 'Settings', icon: '⚙️' },
+                      { href: '/support', label: 'Help & Support', icon: '💬' },
                       { href: '/cart', label: 'Cart', icon: '🛒', badge: count > 0 ? String(count) : undefined },
                     ].map(item => (
                       <Link
